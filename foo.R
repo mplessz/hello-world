@@ -2,9 +2,8 @@
 #`title: "test_file"
 #`author: "Marie Plessz"
 #`date: "8 novembre 2019"
-#`output:
-#`  html_document:
-#`    keep_md: true
+#`output: github_document
+#`  
 #`---
 
 #` ça commence à être rigolo
