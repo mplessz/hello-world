@@ -5,4 +5,8 @@ J'essaie de savoir s'il est réaliste d'utiliser Github pour un projet en scienc
 une ligne depuis SHELL
  c'est la fete du shell
 
-This is from RstudioEcrit depuis mon pc portable a Fresnes
+This is from Rstudio 
+
+Ecrit depuis mon pc portable a Fresnes
+
+Penser à ouvrir git bash en tant qu'administrateur
