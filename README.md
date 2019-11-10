@@ -1,12 +1,11 @@
 # hello-world
 repo d'entraînement
 
-J'essaie de savoir s'il est réaliste d'utiliser Github pour un projet en sciences sociales.
-une ligne depuis SHELL
- c'est la fete du shell
+Ce repo a pour but de tester Git et de m'entraîner à le manier.
 
-This is from Rstudio 
+* comment traiter le dossier contenant les fichiers de données, qui sont gros et pas diffusables?
+* comment traiter les fichiers Rmd, moches sur Github?
+* qu'en est-il de Sourcesup, la forge recommandée par l'INRA?
 
-Ecrit depuis mon pc portable a Fresnes
 
-Penser à ouvrir git bash en tant qu'administrateur
+
