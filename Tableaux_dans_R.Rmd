@@ -26,11 +26,19 @@ Je présente donc plusieurs stratégies possibles, à adapter en fonction des co
 * à l'inverse, si vous faites un graphique vite fait, juste une fois, des techniques plus "à la main" vous feront gagner du temps.
 * quand un tableau ou graphique est réussi on a tendance à s'en resservir... 
 
+## Préambule
+Vous aurez besoin des packages 
+`hdv2003`
+`questionr`
+`stargazer`
+
+Il est vivement conseillé de créer un "projet" dans R pour y rassembler tous les fichiers.
+
 ## Interdit : capture d'écran
 
 On voit parfois dans des mémoires des captures d'écran (touche Impr Ecran) donc des images des tableaux des résultats. C'est moche, ça suggère que vous n'êtes pas capable de faire un tableau digne de ce nom, ça vous décrédibilise. Donc à éviter.
 
-## _Quick and dirty_ : Le copier-coller
+## Niveau 1 : Le copier-coller
 
 Il est possible de faire des copiers-collers réussis depuis R et Rstudio, à condition de comprendre comment ils fonctionnent.
 Les fenêtres de R utilisent tous ces polices un peu désuètes qui font penser à des machines à écrire d'avant votre naissance. C'est parce qu'il s'agit de polices "à chasse fixe" - tous les caractères ont la même largeur, le i comme le m. ainsi on peut facilement aligner du texte brut : toutes les colonnes ont une largeur donnée en nombre de caractères.
@@ -54,7 +62,7 @@ Si vous utilisez un mode sombre, la police est en blanc et vous ne voyez rien : 
 Tout est collé dans une seule colonne (élargissez-la pour vous en assurer).  
 Sélectionnez cette colonne puis, dans excel voici la marche à suivre:
 
-  * onglet donnéez > convertir
+  * onglet données > convertir
   * choisissez `largeur fixe`, cliquez sur suivant
   * Excel essaie de deviner où sont les limites de colonnes, en plaçant des séparateurs, qui sont des lignes verticales avec flèche vers le haut. déplacez, supprimez ou créez des séparateur pour recréer vos colonnes. Cliquez sur suivant.
   * paramétrez le format des colonnes si vous le souhaitez (texte est recommandé si vous avez des chiffres entre parenthèses car Excel les traite comme des nombres négatifs...). Cliquez sur terminer
@@ -65,7 +73,92 @@ Je passe très souvent par excel pour faire les tableaux finaux d'une publicatio
 
 Et surtout, je passe par excel mais je ne fais pas de copier-coller. J'ordonne à R d'exporter mon tableau de résultats, dans un petit fichier txt ou csv (pour comma-separated values).
 
-## Sans passer par le copier-coller: exporter les résultats depuis R
+## Niveau 2 : Sans passer par le copier-coller
+
+R part de fichiers texte et peut produire des fichiers texte. Pour R votre tableau de résultats est de la même nature qu'une base de données qu'elle contiennent des chiffres, un corpus de texte ou des données géographiques. C'est un objet auquel on peut donner un nom et appliquer des fonctions.
+
+Par exemple on peut faire ça :
+
+### Le principe
+
+```{r }
+library(questionr)
+data("hdv2003")
+df <- hdv2003
+
+table(df$sexe, df$peche.chasse, useNA = "ifany")
+sexe.chasse <- table(df$sexe, df$peche.chasse, useNA = "ifany")
+
+write.table(sexe.chasse, file="TdR_Tableau1.txt",
+						dec=",", # Indiquer la virgule comme séparateur des nombres
+						sep ="\t" # Indiquer la tabulation comme séparateur des colonnes
+)
+```
+
+Un fichier `TdR_Tableau1.txt`sera créé dans votre répertoire de travail actuel (le dossier du projet si vous en avez créé un). Vous pouvez préciser un chemin avant le nom du fichier si vous le souhaitez. Vous pouvez ensuite retravailler ce qu'il contient, comme précédemment.
+
+Il existe de nombreux packages qui permettent de stocker dans un fichier texte (créé à cet effet) votre tableau de résultat, en l'embellissant au passage.
+
+### Préparer le tableau dans R avec `stargazer`
+
+Pour limiter au maximum les manipulations "à la main" sur le tableau, qui doivent donc être refaites manuellement à chaque modification des analyses, il s'agit de les automatiser c'est-à-dire de les écrire dans le programme R. Le package `Stargazer` permet ainsi de façonner de nmbreux aspects du tableau.
+
+#### Exemple avec des statistiques descriptives
+
+```{r echo = T}
+library(stargazer)
+stargazer(df,  # des statistiques descriptives sur toutes les colonnes du tableau df 
+					type = "text",  # autres options : latex, html
+					title="Stats descriptives (Titre)", # titre du tableau
+					digits=1, out="TdR_Tableau2.txt", # nom du fichier produit, iavec chemin si besoin
+          covariate.labels = c("Identifiant","Age","Pondération","Nb frères et soeurs","Heures de télé")) # modifier les intitulés des variables
+```
+
+On peut combiner cette fonction avec les opérateurs habituels, en particulier sélectionner des lignes ou colonnes du tableau qui contient les données (ici `df`).
+
+#### Exemple avec des modèles de régression
+
+Les tableaux que produit R par défaut sont peu lisibles.
+On commence par améliorer les noms des modalités, puis on estime les modèles.
+
+```{r}
+# On fait plusieurs régressions sur le fait d'aller ou non au cinéma
+
+# On prépare les données
+str(df$cinema)
+df$etud <- as.factor(ifelse(df$nivetud %in% c("N'a jamais fait d'etudes","A arrete ses etudes, avant la derniere annee d'etudes primaires","Derniere annee d'etudes primaires",
+                                                "1er cycle","2eme cycle"),"Inf. ou egal 2eme cycle",
+                             ifelse(df$nivetud %in% c("Enseignement technique ou professionnel court","Enseignement technique ou professionnel long"), "Technique ou pro.",
+                                    "Superieur")))
+df$cl.age <- as.factor(ifelse(df$age < 30, "1. Moins de 30 ans",
+                           ifelse(df$age < 46, "2. 30-45 ans",
+                                  ifelse(df$age < 61, "3. 46-60 ans","4. Plus de 60 ans"))))
+
+# Modele 1
+reg1 <- glm(cinema ~ sexe + qualif, data = df, family = binomial(logit))
+summary(reg1) ## le résultat tel que le présente R
+
+# Modele 2
+reg2 <- glm(cinema ~ sexe + qualif + etud, data = df, family = binomial(logit))
+
+# Modele3
+reg3 <- glm(cinema ~ sexe + qualif + etud + cl.age + occup , data = df, family = binomial(logit))
+
+```
+Pour faire un tableau propre à partir des tableaux que produit R, il 
+
+```{r}
+# Utilisons Stargazer
+stargazer(reg1, reg2, reg3, 
+          type="text",
+          dep.var.labels = "Aller au cinéma" , # Nom de la variable expliquée. Possible d'en mettre plusieurs si modèles sur plusieurs
+          covariate.labels=c("Femme", # Modalités des variables explicatives, et non leurs noms. Facultatif à nouveau
+                             "Ouvrier qualifié","Technicien","Profession intermédiaire","Cadre","Employé","Autre",
+                             "Etudes supérieures","Ens. technique ou pro.",
+                             "30-45 ans","46-60 ans","Plus de 60 ans",
+                             "Chômeur","Etudiant, éleve","Retraité","Retiré des affaires","Au foyer","Autre inactif"),  
+          out="TdR_Tableau3.txt")
+```
 
 
   
