@@ -1,13 +1,18 @@
 ---
-title: "Tableaux avec R"
+title: "Tableaux dans R"
 author: "Marie Plessz"
 date: "11 mars 2020"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+
 
 ```
 
@@ -34,6 +39,7 @@ Vous aurez besoin des packages
 `questionr`
 `stargazer`
 `rmarkdown`
+`knitr`
 
 Il est vivement conseillé de créer un "projet" dans R pour y rassembler tous les fichiers.
 
@@ -76,23 +82,22 @@ Je passe très souvent par excel pour faire les tableaux finaux d'une publicatio
 
 Et surtout, je passe par excel mais je ne fais pas de copier-coller. J'ordonne à R d'exporter mon tableau de résultats, dans un petit fichier txt ou csv (pour comma-separated values).
 
-## Niveau 2 : Sans passer par le copier-coller
+## Niveau 2 : Exporter dans un fichier
 
 R part de fichiers texte et peut produire des fichiers texte. Pour R votre tableau de résultats est de la même nature qu'une base de données qu'elle contienne des chiffres, un corpus de texte ou des données géographiques. C'est un objet auquel on peut donner un nom et appliquer des fonctions.
 
 Par exemple on peut faire ça :
 
 
-
 ```{r }
-# charger les données dans l'objet df
+# charger les données  HDV dans l'objet data
 library(questionr)
 data("hdv2003")
-df <- hdv2003
+data <- hdv2003
 
 #Un tableau croisé tout simple dans R
-table(df$sexe, df$peche.chasse, useNA = "ifany")
-sexe.chasse <- table(df$sexe, df$peche.chasse, useNA = "ifany")
+sexe.chasse <- lprop(table(data$sexe, data$peche.chasse, useNA = "ifany"))
+sexe.chasse
 
 #exporter ce tableau dans le fichier TdR_Tableau1.txt
 write.table(sexe.chasse, file="TdR_Tableau1.txt",
@@ -103,69 +108,82 @@ write.table(sexe.chasse, file="TdR_Tableau1.txt",
 
 Un fichier `TdR_Tableau1.txt` sera créé dans votre répertoire de travail actuel (le dossier du projet si vous en avez créé un). Vous pouvez préciser un chemin avant le nom du fichier si vous le souhaitez. Vous pouvez ensuite retravailler ce qu'il contient, comme précédemment.
 
+
+
 Il existe de nombreux packages qui permettent de stocker dans un fichier texte (créé à cet effet) votre tableau de résultat, en l'embellissant au passage.
 
-## Niveau 3 : Préparer le tableau dans R avec un package comme `stargazer`
+## Niveau 3 :  Exporter un tableau amélioré avec  `stargazer`
 
 Pour limiter au maximum les manipulations "à la main" sur le tableau, qui doivent donc être refaites manuellement à chaque modification des analyses, il s'agit de les automatiser c'est-à-dire de les écrire dans le programme R. Le package `Stargazer` permet ainsi de façonner de nmbreux aspects du tableau.
+Il existe d'autres packages qui font des choses similaires. Choisissez le vôtre et trouvez les options essentielles pour vous.
 
-### Exemple avec des statistiques descriptives
-
+### Exemple de statistiques descriptives
+Le package `stargazer` permet de stocker dans un fichier texte qu'on indique, un tableau déjà propre.
 ```{r echo = T}
 library(stargazer)
-stargazer(df,  # des statistiques descriptives sur toutes les colonnes du tableau df 
+
+stargazer(data,  # des statistiques descriptives sur toutes les colonnes du tableau data 
 					type = "text",  # autres options : latex, html
+					out="TdR_Tableau2.txt", # nom du fichier produit, iavec chemin si besoin
 					title="Stats descriptives (Titre)", # titre du tableau
 					digits=0,  # nombre de décimales
 					omit.summary.stat = c("p25", "p75"), #ne pas afficher toutes les colonnes
-					out="TdR_Tableau2.txt", # nom du fichier produit, iavec chemin si besoin
-          covariate.labels = c("Identifiant","Age","Pondération","Nb frères et soeurs","Heures de télé")) 
-	# modifie les intitulés des variables
+          covariate.labels = c("Identifiant",
+          			"Age","Pondération",
+          			"Nb frères et soeurs","Heures de télé") 
+				)	# modifie les intitulés des variables
 ```
 
-On peut combiner cette fonction avec les opérateurs habituels, en particulier sélectionner des lignes ou colonnes du tableau qui contient les données (ici `df`).
+On peut combiner cette fonction avec les opérateurs qui permettent de sélectionner des lignes ou colonnes du tableau de données (ici `data`).
 
-#### Exemple avec des modèles de régression
+On peut ensuite le modifier et l'embellir avec un tableur ou Word.
 
-Les tableaux que produit R par défaut sont peu lisibles.
+### Exemple avec des modèles de régression
+
+Après une régression, les tableaux que produit R sont peu lisibles.
 On commence par améliorer les noms des modalités, puis on estime les modèles.
 
 ```{r}
-# On fait plusieurs régressions sur le fait d'aller ou non au cinéma
-
 # On prépare les données
-str(df$cinema) # pour voir comment est codée la variable
-df$etud <- as.factor(ifelse(df$nivetud %in% c("N'a jamais fait d'etudes","A arrete ses etudes, avant la derniere annee d'etudes primaires","Derniere annee d'etudes primaires",
-                                                "1er cycle","2eme cycle"),"Inf. ou egal 2eme cycle",
-                             ifelse(df$nivetud %in% c("Enseignement technique ou professionnel court","Enseignement technique ou professionnel long"), "Technique ou pro.",
-                                    "Superieur")))
+levels(data$cinema)
+ # Le premier niveau est NON. glm l'utilisera comme référence et prédira donc le "OUI".
 
+data$etud <- as.factor(ifelse(data$nivetud %in% c("N'a jamais fait d'etudes",
+		"A arrete ses etudes, avant la derniere annee d'etudes primaires",
+		"Derniere annee d'etudes primaires","1er cycle","2eme cycle"),
+			"Collège",
+        ifelse(data$nivetud %in% c("Enseignement technique ou professionnel court",
+    "Enseignement technique ou professionnel long"), "2daire pro.",
+     	"Superieur")))
 
+# On fait plusieurs régressions sur le fait d'aller ou non au cinéma
 # Modele 1
-reg1 <- glm(cinema ~ sexe + qualif, data = df, family = binomial(logit))
+reg1 <- glm(cinema ~ sexe + qualif, data = data, family = binomial(logit))
 summary(reg1) # le résultat tel que le présente R
 
 # Modele 2
-reg2 <- glm(cinema ~ sexe + qualif + etud, data = df, family = binomial(logit))
+reg2 <- glm(cinema ~ sexe + qualif + etud, data = data, family = binomial(logit))
 
 
 ```
-Pour faire un tableau propre à partir des tableaux que produit R, on utilise `stargazer` sur les résultats.
-`Stargazer` sans option ça donne ça :
+Pour faire un tableau propre à partir des tableaux que produit R, on utilise `stargazer` sur les résultats, qu'on a stocké dans les objets `reg1` et `reg2`.
+`Stargazer` sans option produit un petit fichier texte qui ressemble à ça :
 ```{r}
-# Utilisons Stargazer
-stargazer(reg1, reg2, 
+# Stargazer sans option pour produire un fichier texte
+stargazer(reg1, 
           type="text",
-                    out="TdR_Tableau3.txt") # fichier de sortie
+          out="TdR_Tableau3.txt") # fichier de sortie
 ```
 
 En ajoutant des options, on peut affiner la présentation du tableau.
-En voici quelques-unes.
+Pour l'instant j'inclus toujours les options `type = "text", 	out = "TdR_Tableau4.txt"` ( fichier affiché ci-dessous).
 
-```{r, echo = T, results='asis'}
+```{r, echo = T}
 #  Stargazer avec plein d'options
 stargazer(reg1, reg2, 
-  # dep.var.labels = "Aller au cinéma" , 
+	title = "Déterminants du fait d'aller au cinéma (régressions logistiques)", 
+		# titre du tableau
+  dep.var.labels = "Aller au cinéma" , 
 			# Nom de la variable expliquée. Possible d'en mettre plusieurs
    covariate.labels=c("Femme", 
 "Ouvrier qualifié","Technicien","Profession intermédiaire", "Cadre", "Employé", "Autre", "Etudes supérieures","Ens. technique ou pro."), 
@@ -175,10 +193,93 @@ stargazer(reg1, reg2,
 	report = "vc*",  
 			# rapporter la variable, son coeff et les étoiles (pas les erreurs-standard)
 	keep.stat= c("n", "ll"), # choix des stats en bas de tableau
-	notes ="Source: HDV. Auteur: Marie Plessz" # une note de plus
+	notes ="Source: HDV. Auteur: Marie Plessz",  # une note de plus
+	type = "text", 	out = "TdR_Tableau4.txt"
   ) 
 					
 ```
+
+
+### Dans Word (ou Powerpoint etc.)
+
+Ces fichiers peuvent être utilisés avec les techniques Niveau 1 et Niveau 2, selon les circonstances. Une autre solution consiste à passer par le html : 
+
+* Remplacez la dernière ligne par : `type = "html, out = "montableau.html"`.
+* Ouvrez ce fichier et copiez-collez le dans Word. 
+* Dans l'onglet "Tableau", allez dans "Création" et appliquez un beau modèle de tableau Word.
+
+
+## Niveau 4 : Produire tout le document dans R avec Rmarkdown
+
+Avec Rmarkdown vous pouvez générer depuis R des fichiers word ou html qui contiennent les résultats de vos analyses. Les lignes de code peuvent être visibles, comme ici, ou entièrement cachées. Ainsi si vous modifiez vos analyses, il suffit de compiler à nouveau votre document pour avoir des résultats mis à jour. Et si vous avez installé les outils nécessaires, vous pouvez produire des PDF avec LaTeX mais sans toucher à LaTeX. C'est ce que j'ai fait pour ce document.
+
+Les tableaux ne sont pas forcément beaucoup plus compliqués à produire que précédemment, mais il faut connaître déjà un peu l'écriture en markdown, et avoir installé les logiciels nécessaires, d'où le "niveau 4".
+
+### Des tableaux croisés avec la fonction `kable` du packate `knitr`
+
+`kable` est une fonction très simple d'utilisation pour produire rapidement des tableaux propres. En outre elle fonctionne de la même manière que vous produisiez des fichiers pdf, html ou word.
+Reprenons notre exemple précédent, le tableau stocké dans l'objet `sexe.chasse`. 
+
+
+```{r}
+library(knitr)
+kable(sexe.chasse, 
+	digits = 1, 
+	caption = "Pratique de la chasse selon le sexe (% en ligne)" 
+			)
+```
+
+
+
+### Les tableaux de régression avec Stargazer
+
+Si on réalise son document avec Rmarkdown, et qu'on le compile en un pdf avec LaTeX, il suffit de modifier quelques options par rapport au code précédent:
+
+ - Dans les paramètres du _chunk_ de code : ajouter l'option `results = 'asis'`, afin que le tableau soit directement formaté par LaTeX. Le chunk dans Rmarkdown commence donc par :  ` ```{r,  results='asis'}`.
+ - Dans les options de `stargazer` : 
+  	- Retirer `type = "text"` et la commande `out = ` . Par défaut l'option `type` est réglée sur `latex`.
+  	- ajouter `header=FALSE`. ça évite que Stargazer imprime sa petite pub dans votre pdf.
+ 
+C'est la dernière ligne de la commande suivante. Notez que LaTeX déplace parfois les tableaux pour des raisons esthétiques.
+
+```{r, echo = T, results='asis'}
+#  Stargazer avec plein d'options
+stargazer(reg1, reg2, 
+	title = "Déterminants du fait d'aller au cinéma (régressions logistiques)", 
+		# titre du tableau
+  dep.var.labels = "Aller au cinéma" , 
+			# Nom de la variable expliquée. Possible d'en mettre plusieurs
+   covariate.labels=c("Femme", 
+"Ouvrier qualifié","Technicien","Profession intermédiaire", "Cadre", "Employé", "Autre", "Etudes supérieures","Ens. technique ou pro."), 
+		# Modalités des variables explicatives
+	decimal.mark = ",", digit.separator = "" , # séparateurs de décimale et de millier
+	digits = 2, # nombre de décimales
+	report = "vc*",  
+			# rapporter la variable, son coeff et les étoiles (pas les erreurs-standard)
+	keep.stat= c("n", "ll"), # choix des stats en bas de tableau
+	notes ="Source: HDV. Auteur: Marie Plessz",  # une note de plus
+	header=FALSE # évite l'affichage de la pub pour Stargazer
+		# ne pas oublier d'enlever  type = "text"
+  ) 
+					
+```
+
+### Citer des chiffres dans le texte
+
+Rmarkdown vous permet de mettre à jour automatiquement les résultats chiffrés que vous citez dans votre document. Stockez le chiffre dans un objet et appelez-le dans le texte comme ceci :
+Le coefficient pour la variable sexe dans le modèle 1 vaut `r round(reg1$coefficients[names = "sexeFemme"], 3)`. 
+Pour afficher ce chiffre j'ai tapé : 
+. 
+```{r}
+# 			Le coefficient... dans le modèle 1 vaut `r round(reg1$coefficients[names = "sexeFemme"], 3)`.
+```
+Les apostrophes inversés s'obtiennent avec (AltGr + 7) dans Windows. `r` indique que ce qui est dans les apostrophes est du code R, la suite est la fonction que vous pourriez taper dans la console de R, ici un coefficient de l'objet `reg1`, arrondi à 3 décimales.
+
+## Conclusion
+Selon votre goût pour le code et la bidouille, selon que vous préférez retoucher des bordures à la souris ou rechercher des options sophistiquées (ou des messages d'erreur obscurs) sur Internet, vous opterez pour des stratégies différentes. Mais comme je le disais en introduction, votre choix tiendra aussi au contexte. Il est important de connaître toutes les options, pour ne pas s'enferrer dans du travail fastidieux et sujet à l'erreur (le copier coller etc), mais il n'est pas toujours utile de passer une journée à faire un tableau.
+Pour information, Faire ce document m'a demandé environ ~~9~~ 11 heures, sachant que je connaissais les packages que je voulais vous présenter mais pas leur fonctionnement exact.
+
+
 
 
 
