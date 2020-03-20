@@ -34,8 +34,7 @@ Je présente donc plusieurs stratégies possibles, à adapter en fonction des co
 * quand un tableau ou graphique est réussi on a tendance à s'en resservir... 
 
 ## Préambule
-Vous aurez besoin des packages 
-`hdv2003`
+Vous aurez besoin des packages : 
 `questionr`
 `stargazer`
 `rmarkdown`
@@ -106,8 +105,7 @@ write.table(sexe.chasse, file="TdR_Tableau1.txt",
 )
 ```
 
-Un fichier `TdR_Tableau1.txt` sera créé dans votre répertoire de travail actuel (le dossier du projet si vous en avez créé un). Vous pouvez préciser un chemin avant le nom du fichier si vous le souhaitez. Vous pouvez ensuite retravailler ce qu'il contient, comme précédemment.
-
+Un fichier `TdR_Tableau1.txt` sera créé dans votre répertoire de travail actuel (le dossier du projet si vous en avez créé un). Vous pouvez préciser un chemin avant le nom du fichier si vous le souhaitez. Vous pouvez ensuite retravailler ce qu'il contient, comme précédemment.Et seulement alors, vous faites un copier-coller. 
 
 
 Il existe de nombreux packages qui permettent de stocker dans un fichier texte (créé à cet effet) votre tableau de résultat, en l'embellissant au passage.
