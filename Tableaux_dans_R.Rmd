@@ -7,6 +7,8 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
+
 ```
 
 Objectif : "sortir" les résultats de R (et Rstudio) pour pouvoir les communiquer dans un mémo pour soi, un mémoire ou rapport de recherche, une publication scientifique. Trois dimensions importantes du problème:
@@ -31,10 +33,11 @@ Vous aurez besoin des packages
 `hdv2003`
 `questionr`
 `stargazer`
+`rmarkdown`
 
 Il est vivement conseillé de créer un "projet" dans R pour y rassembler tous les fichiers.
 
-## Interdit : capture d'écran
+## ~~Niveau 0~~ Interdit : capture d'écran
 
 On voit parfois dans des mémoires des captures d'écran (touche Impr Ecran) donc des images des tableaux des résultats. C'est moche, ça suggère que vous n'êtes pas capable de faire un tableau digne de ce nom, ça vous décrédibilise. Donc à éviter.
 
@@ -75,43 +78,49 @@ Et surtout, je passe par excel mais je ne fais pas de copier-coller. J'ordonne �
 
 ## Niveau 2 : Sans passer par le copier-coller
 
-R part de fichiers texte et peut produire des fichiers texte. Pour R votre tableau de résultats est de la même nature qu'une base de données qu'elle contiennent des chiffres, un corpus de texte ou des données géographiques. C'est un objet auquel on peut donner un nom et appliquer des fonctions.
+R part de fichiers texte et peut produire des fichiers texte. Pour R votre tableau de résultats est de la même nature qu'une base de données qu'elle contienne des chiffres, un corpus de texte ou des données géographiques. C'est un objet auquel on peut donner un nom et appliquer des fonctions.
 
 Par exemple on peut faire ça :
 
-### Le principe
+
 
 ```{r }
+# charger les données dans l'objet df
 library(questionr)
 data("hdv2003")
 df <- hdv2003
 
+#Un tableau croisé tout simple dans R
 table(df$sexe, df$peche.chasse, useNA = "ifany")
 sexe.chasse <- table(df$sexe, df$peche.chasse, useNA = "ifany")
 
+#exporter ce tableau dans le fichier TdR_Tableau1.txt
 write.table(sexe.chasse, file="TdR_Tableau1.txt",
-						dec=",", # Indiquer la virgule comme séparateur des nombres
+						dec=",", # Indiquer la virgule comme séparateur des décimales
 						sep ="\t" # Indiquer la tabulation comme séparateur des colonnes
 )
 ```
 
-Un fichier `TdR_Tableau1.txt`sera créé dans votre répertoire de travail actuel (le dossier du projet si vous en avez créé un). Vous pouvez préciser un chemin avant le nom du fichier si vous le souhaitez. Vous pouvez ensuite retravailler ce qu'il contient, comme précédemment.
+Un fichier `TdR_Tableau1.txt` sera créé dans votre répertoire de travail actuel (le dossier du projet si vous en avez créé un). Vous pouvez préciser un chemin avant le nom du fichier si vous le souhaitez. Vous pouvez ensuite retravailler ce qu'il contient, comme précédemment.
 
 Il existe de nombreux packages qui permettent de stocker dans un fichier texte (créé à cet effet) votre tableau de résultat, en l'embellissant au passage.
 
-### Préparer le tableau dans R avec `stargazer`
+## Niveau 3 : Préparer le tableau dans R avec un package comme `stargazer`
 
 Pour limiter au maximum les manipulations "à la main" sur le tableau, qui doivent donc être refaites manuellement à chaque modification des analyses, il s'agit de les automatiser c'est-à-dire de les écrire dans le programme R. Le package `Stargazer` permet ainsi de façonner de nmbreux aspects du tableau.
 
-#### Exemple avec des statistiques descriptives
+### Exemple avec des statistiques descriptives
 
 ```{r echo = T}
 library(stargazer)
 stargazer(df,  # des statistiques descriptives sur toutes les colonnes du tableau df 
 					type = "text",  # autres options : latex, html
 					title="Stats descriptives (Titre)", # titre du tableau
-					digits=1, out="TdR_Tableau2.txt", # nom du fichier produit, iavec chemin si besoin
-          covariate.labels = c("Identifiant","Age","Pondération","Nb frères et soeurs","Heures de télé")) # modifier les intitulés des variables
+					digits=0,  # nombre de décimales
+					omit.summary.stat = c("p25", "p75"), #ne pas afficher toutes les colonnes
+					out="TdR_Tableau2.txt", # nom du fichier produit, iavec chemin si besoin
+          covariate.labels = c("Identifiant","Age","Pondération","Nb frères et soeurs","Heures de télé")) 
+	# modifie les intitulés des variables
 ```
 
 On peut combiner cette fonction avec les opérateurs habituels, en particulier sélectionner des lignes ou colonnes du tableau qui contient les données (ici `df`).
@@ -125,40 +134,52 @@ On commence par améliorer les noms des modalités, puis on estime les modèles.
 # On fait plusieurs régressions sur le fait d'aller ou non au cinéma
 
 # On prépare les données
-str(df$cinema)
+str(df$cinema) # pour voir comment est codée la variable
 df$etud <- as.factor(ifelse(df$nivetud %in% c("N'a jamais fait d'etudes","A arrete ses etudes, avant la derniere annee d'etudes primaires","Derniere annee d'etudes primaires",
                                                 "1er cycle","2eme cycle"),"Inf. ou egal 2eme cycle",
                              ifelse(df$nivetud %in% c("Enseignement technique ou professionnel court","Enseignement technique ou professionnel long"), "Technique ou pro.",
                                     "Superieur")))
-df$cl.age <- as.factor(ifelse(df$age < 30, "1. Moins de 30 ans",
-                           ifelse(df$age < 46, "2. 30-45 ans",
-                                  ifelse(df$age < 61, "3. 46-60 ans","4. Plus de 60 ans"))))
+
 
 # Modele 1
 reg1 <- glm(cinema ~ sexe + qualif, data = df, family = binomial(logit))
-summary(reg1) ## le résultat tel que le présente R
+summary(reg1) # le résultat tel que le présente R
 
 # Modele 2
 reg2 <- glm(cinema ~ sexe + qualif + etud, data = df, family = binomial(logit))
 
-# Modele3
-reg3 <- glm(cinema ~ sexe + qualif + etud + cl.age + occup , data = df, family = binomial(logit))
 
 ```
-Pour faire un tableau propre à partir des tableaux que produit R, il 
-
+Pour faire un tableau propre à partir des tableaux que produit R, on utilise `stargazer` sur les résultats.
+`Stargazer` sans option ça donne ça :
 ```{r}
 # Utilisons Stargazer
-stargazer(reg1, reg2, reg3, 
+stargazer(reg1, reg2, 
           type="text",
-          dep.var.labels = "Aller au cinéma" , # Nom de la variable expliquée. Possible d'en mettre plusieurs si modèles sur plusieurs
-          covariate.labels=c("Femme", # Modalités des variables explicatives, et non leurs noms. Facultatif à nouveau
-                             "Ouvrier qualifié","Technicien","Profession intermédiaire","Cadre","Employé","Autre",
-                             "Etudes supérieures","Ens. technique ou pro.",
-                             "30-45 ans","46-60 ans","Plus de 60 ans",
-                             "Chômeur","Etudiant, éleve","Retraité","Retiré des affaires","Au foyer","Autre inactif"),  
-          out="TdR_Tableau3.txt")
+                    out="TdR_Tableau3.txt") # fichier de sortie
 ```
+
+En ajoutant des options, on peut affiner la présentation du tableau.
+En voici quelques-unes.
+
+```{r, echo = T, results='asis'}
+#  Stargazer avec plein d'options
+stargazer(reg1, reg2, 
+  # dep.var.labels = "Aller au cinéma" , 
+			# Nom de la variable expliquée. Possible d'en mettre plusieurs
+   covariate.labels=c("Femme", 
+"Ouvrier qualifié","Technicien","Profession intermédiaire", "Cadre", "Employé", "Autre", "Etudes supérieures","Ens. technique ou pro."), 
+		# Modalités des variables explicatives
+	decimal.mark = ",", digit.separator = "" , # séparateurs de décimale et de millier
+	digits = 2, # nombre de décimales
+	report = "vc*",  
+			# rapporter la variable, son coeff et les étoiles (pas les erreurs-standard)
+	keep.stat= c("n", "ll"), # choix des stats en bas de tableau
+	notes ="Source: HDV. Auteur: Marie Plessz" # une note de plus
+  ) 
+					
+```
+
 
 
   
