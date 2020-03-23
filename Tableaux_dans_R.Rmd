@@ -213,7 +213,7 @@ Avec Rmarkdown vous pouvez générer depuis R des fichiers word ou html qui cont
 
 Les tableaux ne sont pas forcément beaucoup plus compliqués à produire que précédemment, mais il faut connaître déjà un peu l'écriture en markdown, et avoir installé les logiciels nécessaires, d'où le "niveau 4".
 
-### Des tableaux croisés avec la fonction `kable` du packate `knitr`
+### Des tableaux croisés avec la fonction `kable` du package `knitr`
 
 `kable` est une fonction très simple d'utilisation pour produire rapidement des tableaux propres. En outre elle fonctionne de la même manière que vous produisiez des fichiers pdf, html ou word.
 Reprenons notre exemple précédent, le tableau stocké dans l'objet `sexe.chasse`. 
@@ -240,13 +240,14 @@ Si on réalise son document avec Rmarkdown, et qu'on le compile en un pdf avec L
  
 C'est la dernière ligne de la commande suivante. Notez que LaTeX déplace parfois les tableaux pour des raisons esthétiques.
 
+
 ```{r, echo = T, results='asis'}
 #  Stargazer avec plein d'options
 stargazer(reg1, reg2, 
-	title = "Déterminants du fait d'aller au cinéma (régressions logistiques)", 
+	title = "Déterminants du fait d'aller au cinéma (régressions logistiques)",
 		# titre du tableau
   dep.var.labels = "Aller au cinéma" , 
-			# Nom de la variable expliquée. Possible d'en mettre plusieurs
+		# Nom de la variable expliquée. Possible d'en mettre plusieurs
    covariate.labels=c("Femme", 
 "Ouvrier qualifié","Technicien","Profession intermédiaire", "Cadre", "Employé", "Autre", "Etudes supérieures","Ens. technique ou pro."), 
 		# Modalités des variables explicatives
@@ -259,23 +260,27 @@ stargazer(reg1, reg2,
 	header=FALSE # évite l'affichage de la pub pour Stargazer
 		# ne pas oublier d'enlever  type = "text"
   ) 
-					
+
 ```
+
+Une alternative à `stargazer' est la fonction `xtable`, du package du même nom. Elle convient pour les tableaux croisés.
 
 ### Citer des chiffres dans le texte
 
-Rmarkdown vous permet de mettre à jour automatiquement les résultats chiffrés que vous citez dans votre document. Stockez le chiffre dans un objet et appelez-le dans le texte comme ceci :
-Le coefficient pour la variable sexe dans le modèle 1 vaut `r round(reg1$coefficients[names = "sexeFemme"], 3)`. 
+Rmarkdown vous permet de mettre à jour automatiquement les résultats chiffrés que vous citez dans votre document, comme ceci :
+
+> Le coefficient pour la variable sexe dans le modèle 1 vaut `r round(reg1$coefficients[names = "sexeFemme"], 3)`. 
+
 Pour afficher ce chiffre j'ai tapé : 
-. 
-```{r}
+
+```{r }
 # 			Le coefficient... dans le modèle 1 vaut `r round(reg1$coefficients[names = "sexeFemme"], 3)`.
 ```
 Les apostrophes inversés s'obtiennent avec (AltGr + 7) dans Windows. `r` indique que ce qui est dans les apostrophes est du code R, la suite est la fonction que vous pourriez taper dans la console de R, ici un coefficient de l'objet `reg1`, arrondi à 3 décimales.
 
 ## Conclusion
 Selon votre goût pour le code et la bidouille, selon que vous préférez retoucher des bordures à la souris ou rechercher des options sophistiquées (ou des messages d'erreur obscurs) sur Internet, vous opterez pour des stratégies différentes. Mais comme je le disais en introduction, votre choix tiendra aussi au contexte. Il est important de connaître toutes les options, pour ne pas s'enferrer dans du travail fastidieux et sujet à l'erreur (le copier coller etc), mais il n'est pas toujours utile de passer une journée à faire un tableau.
-Pour information, Faire ce document m'a demandé environ ~~9~~ 11 heures, sachant que je connaissais les packages que je voulais vous présenter mais pas leur fonctionnement exact.
+Pour information, Faire ce document m'a demandé environ  9 heures, sachant que je connaissais les packages que je voulais vous présenter mais pas leur fonctionnement exact. 
 
 
 
