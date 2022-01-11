@@ -1,4 +1,6 @@
-# Soupe Miso facile
+# Recette de Soupe Miso facile
+
+La soupe miso réchauffe, elle est digeste et nutritive. Elle peut devenir un plat complet en y ajoutant des nouilles soba. Le dashi déshydraté permet de la préparer très vite.
 
 ## Ingrédients pour 2
 
@@ -12,13 +14,22 @@
   - lamelles de poireau, de carotte
   - crevettes coupées en deux
   - pour transformer votre bouillon en un plat complet : nouilles soba, spaghetti fins de farine de sarrasin, en épicerie asiatique, magasin bio etc. 
+  - feuilles de coriandre fraîche
 
 ## Préparation
 
 1. Chauffer l'eau dans une casserole
 2. Ajouter le dashi déshydraté, pour obtenir le bouillon
-3. Quand l'eau bout, ajouter la garniture en commençant par les ingrédients les plus longs à cuire (nouilles soba et algues qui doivent se ré-hydrater)
+3. Quand l'eau bout, ajouter la garniture en commençant par les ingrédients les plus longs à cuire (nouilles soba puis algues qui doivent se ré-hydrater, puis légumes)
 4. Dans un bol, délayer la pâte de miso avec quelques cuillères de bouillon
 5. Quand la garniture a atteint la cuisson qui vous plaît (quelques minutes pour les nouilles soba, à peine une minute pour les légumes en lamelles), retirer la casserole du feu et verser le miso délayé. Le miso ne doit pas cuire, c'est pour cela qu'il faut couper la cuisson.
 6. Servir aussitôt.
-7. La soupe peut se réchauffer même si les puristes vous rappelleront que le miso ne doit pas bouillir.
+7. La soupe peut se réchauffer même si les puristes vous rappelleront que le miso ne doit pas bouillir. 
+
+## si vous voulez préparer votre dashi
+
+ Si vous êtes puriste vous pouvez préparer votre dashi. voici [la recette dont je suis partie](https://www.lafujimama.com/how-to-make-dashi/) quand j'ai essayé. ça demande un peu de persévérance et je n'ai pas trouvé que la différence de goût méritait le temps de travail supplémentaire, mais c'est personnel.
+
+ Vous pouvez préparer une importante quantité de dashi, voire deux "tournées" de dashi avec les mêmes algues et copeaux de bonites.
+
+ Il existe des recettes de dashi végétarien, en remplaçant la bonite par des champignons shiitake.
