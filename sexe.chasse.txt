@@ -1,0 +1,3 @@
+"Non"	"Oui"
+"Homme"	727	172
+"Femme"	1049	52
